@@ -15,16 +15,16 @@ const LIGHT_UPGRADER = {
     memory: { role: 'upgrader' }
 };
 
-var spawner = {
+let spawner = {
 
     checkCreeps: function(){
 
-        var harvesters = 0;
-        var upgraders = 0;
-        var builders = 0;
+        let harvesters = 0;
+        let upgraders = 0;
+        let builders = 0;
 
-        for(var name in Game.creeps) {
-            var creep = Game.creeps[name];
+        for(let name in Game.creeps) {
+            let creep = Game.creeps[name];
             if(creep.memory.role == 'harvester') {
                 harvesters++;
             } else if(creep.memory.role == 'upgrader') {
@@ -35,10 +35,10 @@ var spawner = {
         }
 
 
-        for(var i in Game.spawns) {
-            var spawner = Game.spawns[i];
+        for(let i in Game.spawns) {
+            let spawner = Game.spawns[i];
             if(spawner.spawning){
-                var spawningCreep = Game.creeps[spawner.spawning.name];
+                let spawningCreep = Game.creeps[spawner.spawning.name];
                 spawner.room.visual.text(
                     '🛠️' + spawningCreep.memory.role,
                     spawner.pos.x + 1,
@@ -67,7 +67,7 @@ var spawner = {
     },
 
     spawn: function(building, creepOptions){
-        var result = building.createCreep(creepOptions.body, creepOptions.name, creepOptions.memory);
+        let result = building.createCreep(creepOptions.body, creepOptions.name, creepOptions.memory);
     }
 }
 

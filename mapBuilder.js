@@ -1,10 +1,16 @@
-var mapBuilder = {
+let mapBuilder = {
+
+    registBuildings: function(room, buildings){
+        _.forEach(buildings, function(building){
+            room.createConstructionSite(building.pos.x, building.pos.y, building.structure);
+        });
+    },
 
     buildStarPhase: function(){
-        var spawnerPos = [];
-        var buildings = [];
+        let spawnerPos = [];
+        let buildings = [];
 
-        for(var index in Game.spawns){
+        for(let index in Game.spawns){
             spawnerPos = Game.spawns[index].pos;
         }
 
@@ -44,21 +50,21 @@ var mapBuilder = {
             structure: STRUCTURE_CONTAINER
         });
 
-        this.registBuildis(Game.rooms[spawnerPos.roomName], buildings);
+        this.registBuildings(Game.rooms[spawnerPos.roomName], buildings);
 
     },
 
     buildSimpleBase: function(){
-        var spawnerPos = [];
-        var buildings = [];
+        let spawnerPos = [];
+        let buildings = [];
 
-        for(var index in Game.spawns){
+        for(let index in Game.spawns){
             spawnerPos = Game.spawns[index].pos;
         }
 
-        for(var i = 0; i < 9; i++){
+        for(let i = 0; i < 9; i++){
 
-            var structure = STRUCTURE_WALL;
+            let structure = STRUCTURE_WALL;
             if(i > 2 && i < 7){
                 structure = STRUCTURE_RAMPART;
             }
@@ -129,19 +135,13 @@ var mapBuilder = {
             structure: STRUCTURE_EXTENSION
         });
 
-        this.registBuildis(Game.rooms[spawnerPos.roomName], buildings);
+        this.registBuildings(Game.rooms[spawnerPos.roomName], buildings);
 
-    },
-
-    registBuildis: function(room, buildings){
-        _.forEach(buildings, function(building){
-            room.createConstructionSite(building.pos.x, building.pos.y, building.structure);
-        });
     },
 
     findExits: function(room){
         let positionsToCheck = [];
-        for(var i = 0; i < 50; i++){
+        for(let i = 0; i < 50; i++){
             positionsToCheck.push({
                 x: i,
                 y: 0
@@ -192,9 +192,7 @@ var mapBuilder = {
             y: 2
         });
 
-
-
-        var posDuplicates = [];
+        let posDuplicates = [];
 
         gatePositions.sort(function(pos1, pos2){
             if(pos1.x < pos2.x){
@@ -222,7 +220,7 @@ var mapBuilder = {
                 gates.push([item]);
                 return;
             }
-            var placeFound = false;
+            let placeFound = false;
             gates.forEach(function(gate){
                 gate.forEach(tile => {
                     if((tile.x == item.x && (tile.y+1 == item.y || tile.y-1 == item.y))  || (tile.y == item.y && (tile.x+1 == item.x || tile.x-1 == item.x))){
@@ -243,9 +241,9 @@ var mapBuilder = {
         let gatesWithPos = [];
 
         gates.forEach(function(gate){
-            var lastPos;
-            var vertical = true;
-            var horizontal = true;
+            let lastPos;
+            let vertical = true;
+            let horizontal = true;
             gate.forEach(function(pos){
                 if(lastPos == undefined){
                     lastPos = pos;
@@ -260,7 +258,7 @@ var mapBuilder = {
                 }
             });
 
-            var position;
+            let position;
 
             if(horizontal){
                 if(gate[0].x == 0){
@@ -288,153 +286,265 @@ var mapBuilder = {
     },
 
     sealExits: function(room, gatesWithPos){
-        let wallPositions = [];
+        let buildingPositions = [];
 
         gatesWithPos.forEach(function(gates){
 
-            gates.tiles.splice(Math.floor(gates.tiles.length / 2), 1);
+            var ramp = gates.tiles.splice(Math.floor(gates.tiles.length / 2), 1);
 
             switch(gates.position){
 
                 case 'top':
+                    buildingPositions.push({
+                        pos: {
+                            x: ramp[0].x,
+                            y: ramp[0].y + 2
+                        },
+                        structure: STRUCTURE_RAMPART
+                    });
                     gates.tiles.forEach(function(tile){
-                        wallPositions.push({
-                            x: tile.x,
-                            y: tile.y + 2
+                        buildingPositions.push({
+                            pos: {
+                                x: tile.x,
+                                y: tile.y + 2
+                            },
+                            structure: STRUCTURE_WALL
                         });
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 1,
-                        y: gates.tiles[0].y + 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 1,
+                            y: gates.tiles[0].y + 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 2,
-                        y: gates.tiles[0].y + 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 2,
+                            y: gates.tiles[0].y + 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[gates.tiles.length - 1].x + 1,
-                        y: gates.tiles[0].y + 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[gates.tiles.length - 1].x + 1,
+                            y: gates.tiles[0].y + 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[gates.tiles.length - 1].x + 2,
-                        y: gates.tiles[0].y + 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[gates.tiles.length - 1].x + 2,
+                            y: gates.tiles[0].y + 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[gates.tiles.length - 1].x + 2,
-                        y: gates.tiles[0].y + 1
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[gates.tiles.length - 1].x + 2,
+                            y: gates.tiles[0].y + 1
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 2,
-                        y: gates.tiles[0].y + 1
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 2,
+                            y: gates.tiles[0].y + 1
+                        },
+                        structure: STRUCTURE_WALL
                     });
 
                     break;
 
                 case 'bottom':
+                    buildingPositions.push({
+                        pos: {
+                            x: ramp[0].x,
+                            y: ramp[0].y - 2
+                        },
+                        structure: STRUCTURE_RAMPART
+                    });
                     gates.tiles.forEach(function(tile){
-                        wallPositions.push({
-                            x: tile.x,
-                            y: tile.y - 2
+                        buildingPositions.push({
+                            pos: {
+                                x: tile.x,
+                                y: tile.y - 2
+                            },
+                            structure: STRUCTURE_WALL
                         });
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 1,
-                        y: gates.tiles[0].y - 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 1,
+                            y: gates.tiles[0].y - 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 2,
-                        y: gates.tiles[0].y - 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 2,
+                            y: gates.tiles[0].y - 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[gates.tiles.length - 1].x + 1,
-                        y: gates.tiles[0].y - 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[gates.tiles.length - 1].x + 1,
+                            y: gates.tiles[0].y - 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[gates.tiles.length - 1].x + 2,
-                        y: gates.tiles[0].y - 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[gates.tiles.length - 1].x + 2,
+                            y: gates.tiles[0].y - 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[gates.tiles.length - 1].x + 2,
-                        y: gates.tiles[0].y - 1
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[gates.tiles.length - 1].x + 2,
+                            y: gates.tiles[0].y - 1
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 2,
-                        y: gates.tiles[0].y - 1
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 2,
+                            y: gates.tiles[0].y - 1
+                        },
+                        structure: STRUCTURE_WALL
                     });
+
                     break;
 
                 case 'left':
+                    buildingPositions.push({
+                        pos: {
+                            x: ramp[0].x + 2,
+                            y: ramp[0].y
+                        },
+                        structure: STRUCTURE_RAMPART
+                    });
                     gates.tiles.forEach(function(tile){
-                        wallPositions.push({
-                            x: tile.x + 2,
-                            y: tile.y
+                        buildingPositions.push({
+                            pos: {
+                                x: tile.x + 2,
+                                y: tile.y
+                            },
+                            structure: STRUCTURE_WALL
                         });
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x + 2,
-                        y: gates.tiles[0].y - 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x + 2,
+                            y: gates.tiles[0].y - 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x + 2,
-                        y: gates.tiles[0].y - 1
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x + 2,
+                            y: gates.tiles[0].y - 1
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x + 1,
-                        y: gates.tiles[0].y - 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x + 1,
+                            y: gates.tiles[0].y - 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x + 2,
-                        y: gates.tiles[gates.tiles.length - 1].y + 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x + 2,
+                            y: gates.tiles[gates.tiles.length - 1].y + 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x + 2,
-                        y: gates.tiles[gates.tiles.length - 1].y + 1
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x + 2,
+                            y: gates.tiles[gates.tiles.length - 1].y + 1
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x + 1,
-                        y: gates.tiles[gates.tiles.length - 1].y + 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x + 1,
+                            y: gates.tiles[gates.tiles.length - 1].y + 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
 
                     break;
 
                 case 'right':
+                    buildingPositions.push({
+                        pos: {
+                            x: ramp[0].x - 2,
+                            y: ramp[0].y
+                        },
+                        structure: STRUCTURE_RAMPART
+                    });
                     gates.tiles.forEach(function(tile){
-                        wallPositions.push({
-                            x: tile.x - 2,
-                            y: tile.y
+                        buildingPositions.push({
+                            pos: {
+                                x: tile.x - 2,
+                                y: tile.y
+                            },
+                            structure: STRUCTURE_WALL
                         });
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 2,
-                        y: gates.tiles[0].y - 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 2,
+                            y: gates.tiles[0].y - 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 2,
-                        y: gates.tiles[0].y - 1
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 2,
+                            y: gates.tiles[0].y - 1
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 1,
-                        y: gates.tiles[0].y - 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 1,
+                            y: gates.tiles[0].y - 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 2,
-                        y: gates.tiles[gates.tiles.length - 1].y + 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 2,
+                            y: gates.tiles[gates.tiles.length - 1].y + 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 2,
-                        y: gates.tiles[gates.tiles.length - 1].y + 1
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 2,
+                            y: gates.tiles[gates.tiles.length - 1].y + 1
+                        },
+                        structure: STRUCTURE_WALL
                     });
-                    wallPositions.push({
-                        x: gates.tiles[0].x - 1,
-                        y: gates.tiles[gates.tiles.length - 1].y + 2
+                    buildingPositions.push({
+                        pos: {
+                            x: gates.tiles[0].x - 1,
+                            y: gates.tiles[gates.tiles.length - 1].y + 2
+                        },
+                        structure: STRUCTURE_WALL
                     });
                     break;
             }
         });
 
-        wallPositions.forEach(function(wall){
-            room.createConstructionSite(wall.x, wall.y, STRUCTURE_WALL);
-        });
+        this.registBuildings(room, buildingPositions);
+
     }
 
 }

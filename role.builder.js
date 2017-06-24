@@ -1,6 +1,6 @@
-var roleHarvester = require('role.harvester');
+let roleHarvester = require('role.harvester');
 
-var roleBuilder = {
+let roleBuilder = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -15,23 +15,23 @@ var roleBuilder = {
         }
 
         if(creep.memory.building) {
-            var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+            let targets = creep.room.find(FIND_CONSTRUCTION_SITES);
             if(targets.length) {
                 if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'}});
                 }
             } else {
 
-                var structures = creep.room.find(FIND_STRUCTURES);
-                var walls = structures.filter(function(item){
+                let structures = creep.room.find(FIND_STRUCTURES);
+                let walls = structures.filter(function(item){
                     return (item.structureType == STRUCTURE_WALL && item.hits < 5000);
                 });
 
-                var myStructures = creep.room.find(FIND_MY_STRUCTURES);
+                let myStructures = creep.room.find(FIND_MY_STRUCTURES);
 
                 myStructures = _.union(myStructures, walls);
 
-                var structuresToRepair = myStructures.filter(function(item){
+                let structuresToRepair = myStructures.filter(function(item){
                     if(item.hits !== undefined && item.hits < item.hitsMax){
                         return true;
                     }
@@ -47,7 +47,7 @@ var roleBuilder = {
                 }
             }
         } else {
-            var sources = creep.room.find(FIND_SOURCES);
+            let sources = creep.room.find(FIND_SOURCES);
             if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}});
             }
