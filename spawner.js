@@ -1,4 +1,4 @@
-const LIGHT_WORKER_BODY = [WORK, CARRY, MOVE];
+const LIGHT_WORKER_BODY = [WORK, CARRY, CARRY, MOVE, MOVE];
 const LIGHT_HARVESTER = {
     body: LIGHT_WORKER_BODY,
     name: null,
@@ -15,59 +15,82 @@ const LIGHT_UPGRADER = {
     memory: { role: 'upgrader' }
 };
 
+function createCreepOptions(role, room, extraMemory = {}, maxEnergy = 300){
+    let options = {
+        body: LIGHT_WORKER_BODY,
+        name: null,
+        memory: { role: role, room: room }
+    };
+
+    return options;
+}
+
 let spawner = {
 
-    checkCreeps: function(){
+    checkCreeps: function(roomName){
 
-        let harvesters = 0;
-        let upgraders = 0;
-        let builders = 0;
+        let room = Game.rooms[roomName];
+        let roomDetails = Memory.myRoomDetails[roomName];
 
-        for(let name in Game.creeps) {
-            let creep = Game.creeps[name];
-            if(creep.memory.role == 'harvester') {
-                harvesters++;
-            } else if(creep.memory.role == 'upgrader') {
-                upgraders++;
-            } else if(creep.memory.role == 'builder') {
-                builders++;
-            }
-        }
+        let creeps = _.filter(Game.creeps, (creep) => {
+            return creep.memory.room == roomName;
+        });
 
+        _.forEach(roomDetails.creepsRoleMax, function(maxNumber, role){
 
-        for(let i in Game.spawns) {
-            let spawner = Game.spawns[i];
-            if(spawner.spawning){
-                let spawningCreep = Game.creeps[spawner.spawning.name];
-                spawner.room.visual.text(
-                    '🛠️' + spawningCreep.memory.role,
-                    spawner.pos.x + 1,
-                    spawner.pos.y,
-                    {align: 'left', opacity: 0.8});
+            roomDetails.creepsInRole[role] = creeps.filter((creep) => {
+                return creep.memory.role == role;
+            }).length;
+            if(roomDetails.creepsInQueue[role] == undefined){
+                roomDetails.creepsInQueue[role] = 0;
             }
-            if(harvesters < 2){
-                //Game.spawns[i].createCreep([WORK, CARRY, MOVE], null, {role: 'harvester'});
-                this.spawn(spawner, LIGHT_HARVESTER);
-                harvesters++;
-                continue;
+            if(roomDetails.creepsSpawning[role] == undefined){
+                roomDetails.creepsSpawning[role] = 0;
             }
-            if(upgraders < 1){
-                //Game.spawns[i].createCreep([WORK, CARRY, MOVE], null, {role: 'upgrader'});
-                this.spawn(spawner, LIGHT_UPGRADER);
-                upgraders++;
-                continue;
+
+            let creepCount = roomDetails.creepsInRole[role] + roomDetails.creepsInQueue[role] + roomDetails.creepsSpawning[role];
+            if(creepCount < maxNumber){
+                let count = maxNumber - creepCount;
+                for(let i = 0; i < count; i++){
+                    roomDetails.spawnQueue.push(role);
+                }
+                roomDetails.creepsInQueue[role] += count;
             }
-            if(builders < 1){
-                //Game.spawns[i].createCreep([WORK, CARRY, MOVE], null, {role: 'builder'});
-                this.spawn(spawner, LIGHT_BUILDER);
-                builders++;
-                continue;
+        });
+
+        room.find(FIND_MY_SPAWNS).forEach((spawner) => {
+            if(!spawner.spawning && spawner.memory.spawningRole !== undefined){
+                roomDetails.creepsSpawning[spawner.memory.spawningRole]--;
+                spawner.memory.spawningRole = undefined;
             }
-        }
+            if(roomDetails.spawnQueue.length > 0){
+                if(spawner.spawning){
+                    let spawningCreep = Game.creeps[spawner.spawning.name];
+                    spawner.room.visual.text(
+                        '🛠️' + spawningCreep.memory.role,
+                        spawner.pos.x + 1,
+                        spawner.pos.y,
+                        {align: 'left', opacity: 0.8}
+                    );
+                } else {
+                    let spawnRes = this.spawn(spawner, roomDetails.spawnQueue[0]);
+                    if(isNaN(parseInt(spawnRes))){
+                        let spawningCreepRole = roomDetails.spawnQueue.splice(0,1);
+                        spawner.memory.spawningRole = spawningCreepRole;
+                        roomDetails.creepsInQueue[spawningCreepRole]--;
+                        roomDetails.creepsSpawning[spawningCreepRole]++;
+                    }
+                }
+            } else {
+                return false;
+            }
+        });
     },
 
-    spawn: function(building, creepOptions){
-        let result = building.createCreep(creepOptions.body, creepOptions.name, creepOptions.memory);
+    spawn: function(building, role){
+        let creepOptions = createCreepOptions(role, building.room.name);
+
+        return building.createCreep(creepOptions.body, creepOptions.name, creepOptions.memory);
     }
 }
 

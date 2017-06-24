@@ -3,6 +3,9 @@ let mapBuilder = {
     registBuildings: function(room, buildings){
         _.forEach(buildings, function(building){
             room.createConstructionSite(building.pos.x, building.pos.y, building.structure);
+            Memory.buildQueue.push({
+
+            });
         });
     },
 
@@ -62,43 +65,6 @@ let mapBuilder = {
             spawnerPos = Game.spawns[index].pos;
         }
 
-        for(let i = 0; i < 9; i++){
-
-            let structure = STRUCTURE_WALL;
-            if(i > 2 && i < 7){
-                structure = STRUCTURE_RAMPART;
-            }
-
-            buildings.push({
-                pos: {
-                    x:spawnerPos.x-4,
-                    y:spawnerPos.y-4+i
-                },
-                structure: structure
-            });
-            buildings.push({
-                pos: {
-                    x: spawnerPos.x+4,
-                    y: spawnerPos.y-4+i
-                },
-                structure: structure
-            });
-            buildings.push({
-                pos: {
-                    x: spawnerPos.x-4+i,
-                    y: spawnerPos.y-4
-                },
-                structure: structure
-            });
-            buildings.push({
-                pos: {
-                    x: spawnerPos.x-4+i,
-                    y: spawnerPos.y+4
-                },
-                structure: structure
-            });
-        }
-
         buildings.push({
             pos: {
                 x: spawnerPos.x-1,
@@ -139,7 +105,7 @@ let mapBuilder = {
 
     },
 
-    findExits: function(room){
+    findExits: function(roomName){
         let positionsToCheck = [];
         for(let i = 0; i < 50; i++){
             positionsToCheck.push({
@@ -163,7 +129,7 @@ let mapBuilder = {
         let gatePositions = [];
 
         positionsToCheck.forEach(function(pos){
-            if(Game.map.getTerrainAt(pos.x, pos.y, room) != "wall"){
+            if(Game.map.getTerrainAt(pos.x, pos.y, roomName) != "wall"){
                 gatePositions.push({
                     x: pos.x,
                     y: pos.y
@@ -285,12 +251,14 @@ let mapBuilder = {
         return gatesWithPos;
     },
 
-    sealExits: function(room, gatesWithPos){
+    sealExits: function(room){
+        let gatesWithPos = this.findExits(room.name);
+
         let buildingPositions = [];
 
         gatesWithPos.forEach(function(gates){
 
-            var ramp = gates.tiles.splice(Math.floor(gates.tiles.length / 2), 1);
+            let ramp = gates.tiles.splice(Math.floor(gates.tiles.length / 2), 1);
 
             switch(gates.position){
 
@@ -544,7 +512,6 @@ let mapBuilder = {
         });
 
         this.registBuildings(room, buildingPositions);
-
     }
 
 }
