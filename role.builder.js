@@ -3,7 +3,7 @@ let roleHarvester = require('role.harvester');
 let roleBuilder = {
 
     /** @param {Creep} creep **/
-    run: function(creep) {
+    run: function(creep, room) {
 
         if(creep.memory.building && creep.carry.energy == 0) {
             creep.memory.building = false;
@@ -15,10 +15,10 @@ let roleBuilder = {
         }
 
         if(creep.memory.building) {
-            let targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-            if(targets.length) {
-                if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'}});
+            let target = this.selectBuilding(creep, room);
+            if(target !== null) {
+                if(creep.build(target) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(target, {visualizePathStyle: {stroke: '#ffffff'}});
                 }
             } else {
 
@@ -51,6 +51,56 @@ let roleBuilder = {
             if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}});
             }
+        }
+    },
+
+    selectBuilding: function(creep, room){
+        if(creep.memory.workingOn !== undefined){
+           let buildingPos = creep.memory.workingOn.pos;
+           let constructionSite = room.lookAt(buildingPos.x, buildingPos.y).filter((item) => {
+               return item.type == LOOK_CONSTRUCTION_SITES;
+           });
+           if(constructionSite.length < 1){
+               let queueIndex = Memory.myRoomDetails[room.name].buildQueue.findIndex(item => {
+                   return item.pos == buildingPos;
+               });
+               Memory.myRoomDetails[room.name].buildQueue.splice(queueIndex, 1);
+               creep.memory.workingOn = undefined;
+           } else {
+                return constructionSite[0][LOOK_CONSTRUCTION_SITES];
+           }
+        }
+
+        if(Memory.myRoomDetails[room.name].buildQueue.length == 0){
+            return null;
+        }
+        let building = Memory.myRoomDetails[room.name].buildQueue.sort((building1, building2) => {
+            if(building1.inProgress){
+                return -1;
+            }
+            if(building2.inProgress){
+                return 1;
+            }
+            if(building1.priority > building2.priority){
+                return -1;
+            } else if(building1.priority < building2.priority){
+                return 1;
+            } else {
+                return 0;
+            }
+        })[0];
+        let constructionSite = room.lookAt(building.pos.x, building.pos.y).filter((item) => {
+            return item.type == LOOK_CONSTRUCTION_SITES;
+        });
+        if(constructionSite.length > 0){
+            creep.memory.workingOn = {
+                pos: building.pos
+            };
+            building.inProgress = true;
+            return constructionSite[0][LOOK_CONSTRUCTION_SITES];
+        } else {
+            Memory.myRoomDetails[room.name].buildQueue.splice(0, 1);
+            this.selectBuilding(creep, room);
         }
     }
 };

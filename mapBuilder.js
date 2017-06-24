@@ -3,8 +3,15 @@ let mapBuilder = {
     registBuildings: function(room, buildings){
         _.forEach(buildings, function(building){
             room.createConstructionSite(building.pos.x, building.pos.y, building.structure);
-            Memory.buildQueue.push({
 
+            if(building.priority === undefined){
+                building.priority = 1;
+            }
+
+            Memory.myRoomDetails[room.name].push({
+                priority: building.priority,
+                pos: building.pos,
+                inProgress: false
             });
         });
     },

@@ -9,3 +9,32 @@ let gamePhases = {
 }
 
 module.exports = gamePhases;
+
+/*
+(function(x, y, priority, structure) {
+    Game.rooms['sim'].createConstructionSite(x, y, structure);
+
+    Memory.myRoomDetails[Game.rooms['sim'].name].buildQueue.push({
+        priority: priority,
+        pos: {
+            x: x,
+            y: y
+        },
+        inProgress: false
+    });
+})(17,28,1, STRUCTURE_EXTENSION);
+
+(function(x, y, priority, structure) {
+    Game.rooms['sim'].createConstructionSite(x, y, structure);
+
+    Memory.myRoomDetails[Game.rooms['sim'].name].buildQueue.push({
+        priority: priority,
+         pos: {
+             x: x,
+             y: y
+         },
+        inProgress: false
+    });
+})(8,22,4, STRUCTURE_EXTENSION);
+
+*/
